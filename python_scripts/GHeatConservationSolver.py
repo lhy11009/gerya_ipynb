@@ -38,7 +38,10 @@ class EXPLICIT_SOLVER():
             Ts (ndarray) - array of temperature
         '''
         assert(Ts.shape==(self.Ny, self.Nx))
-        self.Ts = Ts.reshape(self.Nx * self.Ny)
+        # We want Ts to first increment on y axis and then on x axis,
+        # thus we want to first transpose Ts, so that y would be the
+        # first to go when we rival the matrix
+        self.Ts = Ts.T.reshape(self.Nx * self.Ny)
     
     def get_time(self):
         '''
