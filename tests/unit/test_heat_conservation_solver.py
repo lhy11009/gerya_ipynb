@@ -4,27 +4,27 @@ from python_scripts.GMesh2d import MESH2D
 
 
 def rectangular_wave_temperature(x, y, xsize, ysize):
-	'''
-	temperature profile of a retangular wave in the middle
-	'''
-	dx = xsize / 10.0
-	dy = ysize / 10.0
-	if type(x) == float and type(y) == float:
-		assert(x >= 0 and x <= xsize and y >= 0 and y <= ysize)
-		if x > (xsize - dx) / 2.0 and x < (xsize + dx) / 2.0\
-			and y > (ysize - dy) / 2.0 and y < (ysize + dy) / 2.0:
-			T = 1300.0
+		'''
+		temperature profile of a retangular wave in the middle
+		'''
+		dx = xsize / 10.0
+		dy = ysize / 10.0
+		if type(x) == float and type(y) == float:
+			assert(x >= 0 and x <= xsize and y >= 0 and y <= ysize)
+			if x > (xsize - dx) / 2.0 and x < (xsize + dx) / 2.0\
+				and y > (ysize - dy) / 2.0 and y < (ysize + dy) / 2.0:
+				T = 1300.0
+			else:
+				T = 1000.0
+		elif type(x) == np.ndarray and type(y) == np.ndarray:
+			assert(x.shape == y.shape)
+			mask = (x > (xsize - dx) / 2.0) & (x < (xsize + dx) / 2.0)\
+				& (y > (ysize - dy) / 2.0) & (y < (ysize + dy) / 2.0)
+			T = np.ones(x.shape) * 1000.0
+			T[mask] = 1300.0
 		else:
-			T = 1000.0
-	elif type(x) == np.ndarray and type(y) == np.ndarray:
-		assert(x.shape == y.shape)
-		mask = (x > (xsize - dx) / 2.0) & (x < (xsize + dx) / 2.0)\
-			& (y > (ysize - dy) / 2.0) & (y < (ysize + dy) / 2.0)
-		T = np.ones(x.shape) * 1000.0
-		T[mask] = 1300.0
-	else:
-		raise TypeError("Type of x or y is wrong (either float or numpy.ndarray")
-	return T
+			raise TypeError("Type of x or y is wrong (either float or numpy.ndarray")
+		return T
 
 
 def test_explicit_constant_k():

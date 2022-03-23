@@ -60,9 +60,9 @@ class EXPLICIT_SOLVER():
             cp - heat capacity
             dt (float): increment in time
         '''
+        assert(self.assembled == False)
         self.dt = dt
         Ts = self.Ts.copy()
-        Ts_new = np.zeros(Ts.shape) # array to hold new temperature
         xs, ys = self.mesh.get_coordinates()
         I = []  # These are indexed into the "left" matrix L
         J = []  # of the linear function Lx = R
@@ -71,8 +71,8 @@ class EXPLICIT_SOLVER():
         if self.use_constant_thermal_conductivity:
             ### constant k, rho and cp
             kappa = thermal_conductivity / (rho * cp)
-            for iy in range(self.Ny):
-                for jx in range(self.Nx):
+            for jx in range(self.Nx):
+                for iy in range(self.Ny):
                     k3 = self.global_index(iy, jx)  # index of this point
                     if iy > 0 and iy < self.Ny-1 and jx > 0 and jx < self.Nx-1:
                         # internal points
@@ -106,8 +106,8 @@ class EXPLICIT_SOLVER():
                         # bottom boundary
                         k2 = self.global_index(iy-1, jx)
                         k3 = self.global_index(iy, jx)
-                        I.append(k2)
-                        J.append(k3)
+                        I.append(k3)
+                        J.append(k2)
                         V.append(1)
                         I.append(k3)
                         J.append(k3)
@@ -150,7 +150,8 @@ class EXPLICIT_SOLVER():
         assert(self.assembled==True)
         start = time.time()
         self.Ts = scipy.sparse.linalg.spsolve(self.L, self.R)
-        self.solved = True
+        self.solved = True  # reset the flags
+        self.assembled = False
         self.t += self.dt
         end = time.time()
         time_elapse = end - start
@@ -176,5 +177,6 @@ class EXPLICIT_SOLVER():
         '''
         xs, ys = self.mesh.get_coordinates()
         xxs, yys = np.meshgrid(xs, ys)
-        Ts = self.Ts.reshape((self.Ny, self.Nx))
+        # here, again, we want the increment to first follow the y axis.
+        Ts = np.transpose(self.Ts.reshape((self.Nx, self.Ny)))
         return xxs, yys, Ts
