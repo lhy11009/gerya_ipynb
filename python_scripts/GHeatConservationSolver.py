@@ -28,6 +28,7 @@ class EXPLICIT_SOLVER():
         self.Ts = np.zeros((Nx * Ny))
         self.assembled = False
         self.solved = False
+        self.t = 0.0
         pass
 
     def initial_temperature(self, Ts):
@@ -38,7 +39,14 @@ class EXPLICIT_SOLVER():
         '''
         assert(Ts.shape==(self.Ny, self.Nx))
         self.Ts = Ts.reshape(self.Nx * self.Ny)
-
+    
+    def get_time(self):
+        '''
+        get time outputs
+        return
+            time (float)
+        '''
+        return self.t
 
     def assemble(self, thermal_conductivity, rho, cp, dt):
         '''
@@ -49,6 +57,7 @@ class EXPLICIT_SOLVER():
             cp - heat capacity
             dt (float): increment in time
         '''
+        self.dt = dt
         Ts = self.Ts.copy()
         Ts_new = np.zeros(Ts.shape) # array to hold new temperature
         xs, ys = self.mesh.get_coordinates()
@@ -137,8 +146,9 @@ class EXPLICIT_SOLVER():
         '''
         assert(self.assembled==True)
         start = time.time()
-        self.S = scipy.sparse.linalg.spsolve(self.L, self.R)
+        self.Ts = scipy.sparse.linalg.spsolve(self.L, self.R)
         self.solved = True
+        self.t += self.dt
         end = time.time()
         time_elapse = end - start
         print("Temperature solver: %.4e s to solver" % time_elapse)

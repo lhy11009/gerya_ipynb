@@ -26,7 +26,8 @@ def rectangular_wave_temperature(x, y, xsize, ysize):
 		raise TypeError("Type of x or y is wrong (either float or numpy.ndarray")
 	return T
 
-def test_constant_thermal_expansivity():
+
+def test_explicit_constant_k():
 	'''
 	test a problem of constant thermal expansivity
 	'''
