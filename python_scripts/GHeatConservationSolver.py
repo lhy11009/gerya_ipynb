@@ -71,20 +71,21 @@ class EXPLICIT_SOLVER():
         if self.use_constant_thermal_conductivity:
             ### constant k, rho and cp
             kappa = thermal_conductivity / (rho * cp)
+            i = 0  # incrememnt on i for I indexes
             for jx in range(self.Nx):
                 for iy in range(self.Ny):
+                    k1 = self.global_index(iy, jx - 1)   # index of the point to the left
+                    k2 = self.global_index(iy - 1, jx)   # index of the point above
                     k3 = self.global_index(iy, jx)  # index of this point
+                    k4 = self.global_index(iy + 1, jx)   # index of the point below
+                    k5 = self.global_index(iy, jx + 1)   # index of the point to the right
                     if iy > 0 and iy < self.Ny-1 and jx > 0 and jx < self.Nx-1:
                         # internal points
                         dx = xs[jx + 1] - xs[jx]
                         dy = ys[iy + 1] - ys[iy]
-                        k1 = self.global_index(iy, jx - 1)   # index of the point to the left
-                        k2 = self.global_index(iy - 1, jx)   # index of the point above
-                        k4 = self.global_index(iy + 1, jx)   # index of the point below
-                        k5 = self.global_index(iy, jx + 1)   # index of the point to the right
                         Ts_new = Ts[k3] + kappa * dt * ( (Ts[k1] - 2 * Ts[k3] + Ts[k5]) / dx**2.0\
                              + (Ts[k2] - 2*Ts[k3] + Ts[k4]) / dy**2.0) # get the solution directly
-                        I.append(k3)
+                        I.append(i)
                         J.append(k3)
                         V.append(1)
                         R.append(Ts_new)
@@ -93,50 +94,44 @@ class EXPLICIT_SOLVER():
                         # are used here. This is formulated by one point on the boundary and another interal point
                         # next to it.
                         # top boundary
-                        k3 = self.global_index(iy, jx)
-                        k4 = self.global_index(iy+1, jx)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k3)
                         V.append(1)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k4)
                         V.append(-1)
                         R.append(0.0)
                     elif iy == self.Ny - 1:
                         # bottom boundary
-                        k2 = self.global_index(iy-1, jx)
-                        k3 = self.global_index(iy, jx)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k2)
                         V.append(1)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k3)
                         V.append(-1)
                         R.append(0.0)
                     elif jx == 0:
                         # left boundary
-                        k3 = self.global_index(iy, jx)
-                        k5 = self.global_index(iy, jx + 1)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k3)
                         V.append(1)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k5)
                         V.append(-1)
                         R.append(0.0)
                     elif jx == self.Nx - 1:
                         # right boundary
-                        k1 = self.global_index(iy, jx - 1)
-                        k3 = self.global_index(iy, jx)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k1)
                         V.append(1)
-                        I.append(k3)
+                        I.append(i)
                         J.append(k3)
                         V.append(-1)
                         R.append(0.0)
                     else:
                         raise IndexError("Index error found with iy = %d, jx = %d" % (iy, jx))
+                    i += 1
+            assert(i == self.Nx * self.Ny)
             # Finally, assemble the L matrix and the R vector.
             self.L = sparse.csr_matrix((V, (I, J)), shape=(self.Nx * self.Ny, self.Nx * self.Ny))
             self.R = np.array(R)
@@ -157,15 +152,15 @@ class EXPLICIT_SOLVER():
         time_elapse = end - start
         print("Temperature solver: %.4e s to solver" % time_elapse)
     
-    def global_index(self, i, j):
+    def global_index(self, iy, jx):
         '''
         Get global index from the indexing along x and y, note the differences to Geyra's book
         as we start from index 0
         Inputs:
-            i (int) - x index
-            y (int) - y index
+            iy (int) - y index
+            jx (int) - x index
         '''
-        return self.Ny * j + i
+        return self.Ny * jx + iy
 
     def export(self):
         '''
