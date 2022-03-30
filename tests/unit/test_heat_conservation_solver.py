@@ -1,6 +1,7 @@
 import numpy as np
 from python_scripts.GHeatConservationSolver import *
 from python_scripts.GMesh2d import MESH2D
+import scipy.sparse
 
 
 def rectangular_wave_temperature(x, y, xsize, ysize):
@@ -34,7 +35,7 @@ def test_explicit_constant_k():
 	# initiate mesh
 	xsize = 1000000.0 # Model size, m
 	ysize = 1500000.0
-	xnum = 6   # Number of nodes
+	xnum = 3   # Number of nodes
 	ynum = 4
 	xs = np.linspace(0.0, xsize, xnum) # construct xs 
 	ys = np.linspace(0.0, ysize, ynum) # construct ys
@@ -46,5 +47,10 @@ def test_explicit_constant_k():
 	# initiate solver
 	HCSolver = EXPLICIT_SOLVER(Mesh2d, use_constant_thermal_conductivity=True)
 	HCSolver.assemble(3.0, 3200.0, 1000.0, 1.0)
+	I, J, V = scipy.sparse.find(HCSolver.L)
+	print(I)
+	assert(np.alltrue(I == np.array([0,0,1,2,3,3,4,1,4,5,9,2,6,7,10,7,8,8,9,10,11,11])))
+	# assert(J == np.array([0,1,1,2,2,3,4,5,5,5,5,6,6,6,6,7,8,9,9,10,10,11]))
+	# assert(V == np.array([[1,-1,1,1,1,-1,1,-1,-1,1,1,-1,1,1,1,-1,1,-1,-1,-1,1,-1]]))
 	HCSolver.solve()
 
