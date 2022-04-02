@@ -43,6 +43,39 @@ class MESH2D():
         '''
         inode = jx * (self.ynum + 1) + iy
         return inode
+    
+    def get_node_center(self, inode):
+        '''
+        Get the coordinates of node center
+        '''
+        iy, jx = self.get_indexes_of_node(inode)
+        if iy == self.ys.size:
+            y_center = self.ys[-1] + (self.ys[-1] - self.ys[-2]) / 2.0
+        elif iy == 0:
+            y_center = self.ys[0] / 2.0
+        else:
+            y_center = (self.ys[iy] + self.ys[iy-1]) / 2.0
+        if jx == self.xs.size:
+            x_center = self.xs[-1] + (self.xs[-1] - self.xs[-2]) / 2.0
+        elif jx == 0:
+            x_center =self.xs[0] / 2.0
+        else:
+            x_center = (self.xs[jx] + self.xs[jx-1]) / 2.0
+        return x_center, y_center
+    
+    def get_node_size(self, x, y):
+        '''
+        Get the size of the node
+        Inputs:
+            x, y: coordinates of a point
+        Returns:
+            x_stp, y_stp: size of the nodes
+        '''
+        iy = self.iy_up_to(y)
+        jx = self.jx_left_to(x)
+        x_stp = self.xs[jx+1] - self.xs[jx]
+        y_stp = self.ys[iy+1] - self.ys[iy]
+        return x_stp, y_stp
 
     def get_indexes_of_node(self, inode):
         '''

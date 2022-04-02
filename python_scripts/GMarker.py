@@ -1,7 +1,6 @@
 import numpy as np
 import random
 
-
 class NoMarkerNearPointError(Exception):
     '''
     Error handler class for no markers near a point
@@ -57,7 +56,7 @@ class MARKER():
         self.densities = [3300.0, 3200.0]
         # field
         self.fields = []
-        self.n_field = 2
+        self.n_field = 2  # density and viscosity
         self.i_density = 0
         self.i_viscosity = 1
         self.field_averaing = ['arithmetic', 'geometric']
@@ -233,7 +232,7 @@ class MARKER():
         for i in range(self.n_markers):
             x = self.xms[i]
             y = self.yms[i]
-            x_stp, y_stp = self.mesh.get_cell_size(x, y)
+            x_stp, y_stp = self.mesh.get_node_size(x, y)
             vx =  vxs[i]
             vy = vys[i]
             dt_i = min(abs(x_stp/vx/2.0), abs(y_stp/vy/2.0))
@@ -275,6 +274,16 @@ class MARKER():
         assert(np.min(self.xms) > 0.0 and np.max(self.xms) < xsize)
         assert(np.min(self.yms) > 0.0 and np.max(self.yms) < ysize)
 
+    def get_adjacent_markers(self, iy, jx):
+        '''
+        Return adjacent markers to a mesh point
+        '''
+        inode0 = self.mesh.get_node_index(iy, jx)
+        i_markers = self.markers_on_nodes[inode0]
+        xs = self.xms[i_markers]
+        ys = self.yms[i_markers]
+        ids = self.ids[i_markers]
+        return xs, ys, ids
     
     def execute(self):
         '''

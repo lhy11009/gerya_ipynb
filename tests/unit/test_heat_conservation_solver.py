@@ -50,7 +50,7 @@ def test_explicit_constant_k():
 	I, J, V = scipy.sparse.find(HCSolver.L)
 	print(I)
 	assert(np.alltrue(I == np.array([0,0,1,2,3,3,4,1,4,5,9,2,6,7,10,7,8,8,9,10,11,11])))
-	# assert(J == np.array([0,1,1,2,2,3,4,5,5,5,5,6,6,6,6,7,8,9,9,10,10,11]))
-	# assert(V == np.array([[1,-1,1,1,1,-1,1,-1,-1,1,1,-1,1,1,1,-1,1,-1,-1,-1,1,-1]]))
+	assert(np.alltrue(J == np.array([0,1,1,2,2,3,4,5,5,5,5,6,6,6,6,7,8,9,9,10,10,11])))
+	assert(np.alltrue(V == np.array([[1,-1,1,1,1,-1,1,-1,-1,1,1,-1,1,1,1,-1,1,-1,-1,-1,1,-1]])))
 	HCSolver.solve()
 
