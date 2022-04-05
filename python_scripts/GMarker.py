@@ -18,7 +18,7 @@ class MARKER():
         yms (list of float): y coordinates of markers
         last_time_increment (float): time increment of last step
     '''
-    def __init__(self, mesh, n_markers_x, n_markers_y):
+    def __init__(self, mesh, n_markers_x, n_markers_y, **kwargs):
         '''
         Initialization
         Inputs:
@@ -27,7 +27,10 @@ class MARKER():
             n_markers_x (int): numbers of markers along x
             n_markers_y (int): numbers of markers along y
             get_indexes (func): take x and y, return an int value of index
+            kwargs (dict):
+                material_indexes_method (func): this function takes a x and y value, returns the id of the material
         '''
+        material_indexes_method = kwargs.get('material_indexes_method', None)
         self.mesh = mesh
         xsize, ysize = mesh.get_sizes()
         xnum, ynum = mesh.get_number_of_points_xy()
@@ -51,7 +54,10 @@ class MARKER():
         self.yms = yms
         self.check_marker_coordinates()
         # marker index
-        self.ids = self.get_material_indexes(self.xms, self.yms)
+        if material_indexes_method != None:
+            self.ids = material_indexes_method(self.xms, self.yms)
+        else:
+            self.ids = self.get_material_indexes(self.xms, self.yms)
         self.viscosities = [1e21, 1e20]  # relate to index 0 and index 1
         self.densities = [3300.0, 3200.0]
         # field
@@ -216,14 +222,18 @@ class MARKER():
         eta1 = average(eta, etaUL, etaA, etaL, method='harmonic')
         return eta1
     
-    def advect(self, accuracy, last_time_increment):
+    def advect(self, accuracy, last_time_increment, **kwargs):
         '''
         advect the marker field
-        Return:
-            dt (float): time step
+        Inputs:
             accuracy (int): accuracy of the Runge-Kutta method
             last_time_increment(float): time increment of the last step
+            kwargs (dict):
+                dt_upper_limit (float): give a upper limit to dt
+        Return:
+            dt (float): time step
         '''
+        dt_upper_limit = kwargs.get('dt_upper_limit', None)
         xsize, ysize = self.mesh.get_sizes()
         vxs, vys = self.assign_velocities_to_markers(self.func_vx, self.func_vy, accuracy=accuracy, dt=last_time_increment)
         # get the time step
@@ -241,6 +251,8 @@ class MARKER():
                 is_first = False
             else:
                 dt = min(dt, dt_i)
+        if dt_upper_limit != None:
+            dt = min(dt_upper_limit, dt)  # apply a upper limit
         # advect
         print("Advecting by dt = %.4e" % dt)
         for i in range(self.n_markers):
